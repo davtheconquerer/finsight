@@ -46,14 +46,9 @@ DEMO_MOVIES = [
     ("The Lost Kingdom", 2022, "Movie", ["Animation", "Adventure"], 8.3, 51000000000),
     ("Breaking Point", 2023, "Movie", ["Drama", "Thriller"], 7.9, 60000000000),
     ("Starlight Express", 2024, "Movie", ["Musical", "Drama"], 7.6, 66000000000),
-    ("The Cold Ground", 2022, "Movie", ["Horror", "Thriller"], 7.0, 48000000000),
     ("Digital Dreams", 2023, "Movie", ["Sci-Fi", "Drama"], 8.1, 57000000000),
     ("Rising Tides", 2024, "Movie", ["Drama", "Action"], 7.5, 63000000000),
     ("The Perfect Score", 2022, "Movie", ["Comedy", "Sport"], 7.3, 42000000000),
-    ("Shadow Protocol", 2023, "Movie", ["Action", "Thriller"], 7.7, 69000000000),
-    ("Amber Alert", 2024, "Movie", ["Crime", "Drama"], 8.0, 54000000000),
-    ("The Wild Frontier", 2022, "Movie", ["Western", "Adventure"], 7.8, 60000000000),
-    ("Frozen Depths", 2023, "Movie", ["Horror", "Sci-Fi"], 7.2, 51000000000),
 ]
 
 DEMO_SHOWS = {
@@ -115,6 +110,22 @@ DEVICES = [
     ("Jellyfin for LG TV", "LG OLED C3"),
 ]
 
+PHONE_DEVICES = [
+    ("Jellyfin for Android", "Samsung Galaxy S24"),
+    ("Jellyfin for iOS", "iPhone 15"),
+]
+
+NON_PHONE_DEVICES = [
+    ("Chrome", "Windows PC"),
+    ("Safari", "MacBook Pro"),
+    ("Jellyfin for Android TV", "NVIDIA Shield"),
+    ("Jellyfin for Roku", "Roku Ultra"),
+    ("Jellyfin for Apple TV", "Apple TV 4K"),
+    ("Firefox", "Linux Desktop"),
+    ("Edge", "Windows Laptop"),
+    ("Jellyfin for LG TV", "LG OLED C3"),
+]
+
 PLAY_METHODS = ["DirectPlay", "DirectPlay", "DirectPlay", "DirectStream", "Transcode"]
 
 
@@ -129,9 +140,17 @@ def build_media_list() -> list[dict]:
     idx = 0
     now = datetime.utcnow()
 
-    for title, year, typ, genres, rating, ticks in DEMO_MOVIES:
+    never_played_indices = random.sample(range(len(DEMO_MOVIES)), 3)
+
+    for i, (title, year, typ, genres, rating, ticks) in enumerate(DEMO_MOVIES):
         added = now - timedelta(days=random.randint(30, 365))
-        played = added + timedelta(days=random.randint(1, min(30, (now - added).days)))
+
+        if i in never_played_indices:
+            last_played = None
+        else:
+            played = added + timedelta(days=random.randint(1, min(30, (now - added).days)))
+            last_played = played
+
         items.append(
             {
                 "jellyfin_id": f"movie-demo-{idx:04d}",
@@ -144,7 +163,7 @@ def build_media_list() -> list[dict]:
                 "play_count": 0,
                 "path": f"/media/Movies/{title} ({year})/{title}.mkv",
                 "added_at": added,
-                "last_played_at": played if random.random() > 0.15 else None,
+                "last_played_at": last_played,
                 "size_bytes": random.randint(2_000_000_000, 15_000_000_000),
             }
         )
@@ -227,18 +246,23 @@ async def seed():
     print(f"  Created {len(media_objects)} media items")
 
     print("Seeding cold media (for library janitor)...")
+    now = datetime.utcnow()
+
+    days_min = 250
+    days_max = 340
+
     cold_media = [
         MediaMetadata(
             jellyfin_id="cold-movie-1",
             title="Forgotten Classic",
             type="Movie",
-            year=2015,
+            year=2024,
             genres='["Drama"]',
             runtime_ticks=6300000000,
             community_rating=8.5,
             play_count=0,
             path="/media/Movies/Forgotten Classic.mkv",
-            added_at=datetime(2020, 1, 15),
+            added_at=now - timedelta(days=random.randint(days_min, days_max)),
             last_played_at=None,
             size_bytes=800000000,
         ),
@@ -246,27 +270,27 @@ async def seed():
             jellyfin_id="cold-movie-2",
             title="Old Documentary",
             type="Movie",
-            year=2018,
+            year=2024,
             genres='["Documentary"]',
             runtime_ticks=5400000000,
             community_rating=7.2,
             play_count=1,
             path="/media/Movies/Old Documentary.mkv",
-            added_at=datetime(2019, 6, 1),
-            last_played_at=datetime(2024, 1, 10),
+            added_at=now - timedelta(days=random.randint(days_min, days_max)),
+            last_played_at=now - timedelta(days=random.randint(days_min, days_max)),
             size_bytes=600000000,
         ),
         MediaMetadata(
             jellyfin_id="cold-movie-3",
             title="Obscure Foreign Film",
             type="Movie",
-            year=2012,
+            year=2024,
             genres='["Drama", "Foreign"]',
             runtime_ticks=8100000000,
             community_rating=7.8,
             play_count=0,
             path="/media/Movies/Obscure Foreign Film.mkv",
-            added_at=datetime(2018, 3, 20),
+            added_at=now - timedelta(days=random.randint(days_min, days_max)),
             last_played_at=None,
             size_bytes=900000000,
         ),
@@ -274,12 +298,12 @@ async def seed():
             jellyfin_id="cold-series-1",
             title="Abandoned Series S1",
             type="Episode",
-            year=2016,
+            year=2024,
             genres='["Comedy"]',
             runtime_ticks=1800000000,
             play_count=0,
             path="/media/TV/Abandoned Series/Season 1/Episode 1.mkv",
-            added_at=datetime(2017, 5, 10),
+            added_at=now - timedelta(days=random.randint(days_min, days_max)),
             last_played_at=None,
             size_bytes=400000000,
         ),
@@ -287,14 +311,14 @@ async def seed():
             jellyfin_id="cold-movie-4",
             title="Early 2000s Flick",
             type="Movie",
-            year=2003,
+            year=2024,
             genres='["Action"]',
             runtime_ticks=6900000000,
             community_rating=6.5,
             play_count=2,
             path="/media/Movies/Early 2000s Flick.mkv",
-            added_at=datetime(2015, 8, 1),
-            last_played_at=datetime(2023, 2, 15),
+            added_at=now - timedelta(days=random.randint(days_min, days_max)),
+            last_played_at=now - timedelta(days=random.randint(days_min, days_max)),
             size_bytes=700000000,
         ),
     ]
@@ -308,17 +332,34 @@ async def seed():
     sessions = []
     now = datetime.utcnow()
 
+    user_devices = {}
+    for user in user_objects:
+        phone = random.choice(PHONE_DEVICES)
+        other_devices = random.sample(NON_PHONE_DEVICES, 2)
+        user_devices[user.id] = [phone] + other_devices
+
+    active_streams_created = {user.id: False for user in user_objects}
+
     for _ in range(400):
         user = random.choice(user_objects)
+        user_device_list = user_devices[user.id]
+        client, device = random.choice(user_device_list)
+
         media = random.choice(media_objects)
-        started = random_date(60)
+        started = random_date(365)
         duration = random.randint(300, max(600, int(media.runtime_ticks // 10000000) if media.runtime_ticks else 3600))
         ended = started + timedelta(seconds=duration)
         if ended > now:
             ended = now
             duration = int((ended - started).total_seconds())
 
-        client, device = random.choice(DEVICES)
+        is_active = False
+        if not active_streams_created[user.id] and random.random() < 0.06:
+            is_active = True
+            active_streams_created[user.id] = True
+            ended = None
+            duration = None
+
         play_method = random.choice(PLAY_METHODS)
         is_transcoding = play_method == "Transcode"
         reason = random.choice(TRANSCODE_REASONS) if is_transcoding else None
@@ -328,8 +369,8 @@ async def seed():
             user_id=user.id,
             media_id=media.id,
             started_at=started,
-            ended_at=ended if random.random() > 0.05 else None,
-            duration_seconds=duration if ended < now else None,
+            ended_at=ended,
+            duration_seconds=duration,
             device_name=device,
             client_name=client,
             is_transcoding=is_transcoding,
