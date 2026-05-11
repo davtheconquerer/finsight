@@ -129,7 +129,7 @@ async function refreshDashboard() {
     ]);
     renderStats(stats);
     renderActiveSessions(sessions);
-    renderHistory(history);
+    renderHistory(history.items);
     buildPlaysChart(plays);
     buildTopMediaChart(topMedia);
 }
