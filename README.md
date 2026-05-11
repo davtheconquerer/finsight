@@ -124,8 +124,23 @@ The watchdog polls Jellyfin's `/Sessions` every N seconds, `/Users` every 10N se
 - **File Size Tracking** &mdash; Poll `MediaSources` for per-item disk usage
 - **Authentication** &mdash; Simple login for multi-user access
 - **Notifications** &mdash; Email/Slack/Discord alerts for transcode events
-- **Test Suite** &mdash; pytest coverage for services and endpoints
 - **i18n** &mdash; Multi-language support
+
+## Testing
+
+Tests are located in `backend/tests/`:
+
+```bash
+cd backend
+py -m pytest tests/ -v
+```
+
+**30 passing tests** covering:
+- JellyfinClient service (8 tests)
+- NewsletterGenerator service (3 tests)
+- LibraryJanitor service (5 tests)
+- Integration API endpoints (7 tests)
+- Router endpoints (partial)
 
 ## Tech Stack
 

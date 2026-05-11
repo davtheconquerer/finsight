@@ -45,12 +45,12 @@ py -m pytest tests/ --cov=app --cov-report=term-missing
    - Full application flow testing
    - Seeded test data for realistic scenarios
 
-### Passing Tests (26)
+### Passing Tests (30)
 
-- All JellyfinClient service methods
-- NewsletterGenerator (get_week_range, render_html)
-- LibraryJanitor (get_cold_count, get_user_stats)
-- Most integration API endpoints
+- All JellyfinClient service methods (8 tests)
+- NewsletterGenerator (get_week_range, render_html) (3 tests)
+- LibraryJanitor (get_cold_media, get_cold_count, get_user_stats) (5 tests)
+- Integration API endpoints (7 tests)
 - Some router endpoints
 
 ## What Tests DON'T Cover
