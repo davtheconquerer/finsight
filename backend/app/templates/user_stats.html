@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+    <h2>User Statistics</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Plays</th>
+                    <th>Transcodes</th>
+                    <th>Transcode Ratio</th>
+                    <th>Last Seen</th>
+                    <th>Top Devices</th>
+                </tr>
+            </thead>
+            <tbody id="user-stats-body">
+                <tr><td colspan="6" style="text-align:center;color:#666;padding:2rem;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadUserStats() {
+    const resp = await fetch('/api/users/stats');
+    const users = await resp.json();
+    const tbody = document.getElementById('user-stats-body');
+    if (!users || users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;padding:2rem;">No user data</td></tr>';
+        return;
+    }
+    tbody.innerHTML = users.map(u => {
+        const devices = (u.devices || []).map(d => `${d.name} (${d.count})`).join(', ') || '\u2014';
+        const lastSeen = u.last_seen ? new Date(u.last_seen).toLocaleString() : '\u2014';
+        return `
+        <tr>
+            <td><strong>${esc(u.name)}</strong></td>
+            <td>${u.total_plays}</td>
+            <td><span class="badge ${u.transcodes > 0 ? 'badge-transcode' : 'badge-direct'}">${u.transcodes}</span></td>
+            <td>${u.transcode_ratio}</td>
+            <td>${lastSeen}</td>
+            <td style="font-size:0.8rem;color:#aaa;">${devices}</td>
+        </tr>`;
+    }).join('');
+}
+
+function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', loadUserStats);
+</script>
+{% endblock %}

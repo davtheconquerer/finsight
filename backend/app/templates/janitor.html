@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+    <div class="filter-bar">
+        <h2>Library Janitor — Cold Media</h2>
+        <div class="filters">
+            <label style="font-size:0.85rem;color:#8888aa;">Not played in</label>
+            <select id="month-select" class="filter-input" style="width:80px;">
+                <option value="3">3</option>
+                <option value="6" selected>6</option>
+                <option value="12">12</option>
+                <option value="24">24</option>
+            </select>
+            <label style="font-size:0.85rem;color:#8888aa;">months</label>
+            <button id="apply-btn" class="btn">Refresh</button>
+            <a id="export-link" class="btn" style="text-decoration:none;">Export CSV</a>
+        </div>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Year</th>
+                    <th>Plays</th>
+                    <th>Last Played</th>
+                    <th>Cold For</th>
+                    <th>Runtime</th>
+                </tr>
+            </thead>
+            <tbody id="cold-media-body">
+                <tr><td colspan="7" style="text-align:center;color:#666;padding:2rem;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p id="cold-count" style="text-align:center;font-size:0.85rem;color:#8888aa;padding:0.5rem 0;"></p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadColdMedia() {
+    const months = document.getElementById('month-select').value;
+    const resp = await fetch(`/api/library/cold-media?months=${months}`);
+    const data = await resp.json();
+
+    const tbody = document.getElementById('cold-media-body');
+    if (!data.items || data.items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#666;padding:2rem;">No cold media found</td></tr>';
+    } else {
+        tbody.innerHTML = data.items.map(m => {
+            const runtime = m.runtime_ticks ? Math.round(m.runtime_ticks / 600000000) + 'm' : '\u2014';
+            const coldFor = m.days_since_played !== null ? m.days_since_played + ' days' : 'Never played';
+            const lastPlayed = m.last_played_at ? new Date(m.last_played_at).toLocaleDateString() : '\u2014';
+            return `
+            <tr>
+                <td><a href="/media/${m.id}" class="nav-link" style="display:inline;padding:0">${esc(m.title)}</a></td>
+                <td>${esc(m.type)}</td>
+                <td>${m.year || '\u2014'}</td>
+                <td>${m.play_count}</td>
+                <td>${lastPlayed}</td>
+                <td><span class="badge badge-transcode">${coldFor}</span></td>
+                <td>${runtime}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    document.getElementById('cold-count').textContent = `${data.count} items not played in ${data.threshold_months}+ months`;
+    document.getElementById('export-link').href = `/api/library/cold-media/export?months=${months}`;
+}
+
+function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+}
+
+document.getElementById('apply-btn').addEventListener('click', loadColdMedia);
+document.addEventListener('DOMContentLoaded', loadColdMedia);
+</script>
+{% endblock %}

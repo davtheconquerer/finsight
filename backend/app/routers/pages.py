@@ -31,3 +31,13 @@ async def media_detail_page(request: Request, item_id: int):
 @router.get("/newsletter", response_class=HTMLResponse)
 async def newsletter_page(request: Request):
     return templates.TemplateResponse("newsletter.html", {"request": request})
+
+
+@router.get("/library", response_class=HTMLResponse)
+async def library_page(request: Request):
+    return templates.TemplateResponse("janitor.html", {"request": request})
+
+
+@router.get("/users", response_class=HTMLResponse)
+async def users_page(request: Request):
+    return templates.TemplateResponse("user_stats.html", {"request": request})

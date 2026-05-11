@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import async_session_factory, init_db
-from app.routers import media, newsletter, pages, sessions
+from app.routers import janitor, media, newsletter, pages, sessions
 from app.services.jellyfin_client import JellyfinClient
 from app.services.newsletter import NewsletterGenerator, get_week_range
 from app.services.watchdog import Watchdog
@@ -96,6 +96,7 @@ app.include_router(pages.router)
 app.include_router(newsletter.router)
 app.include_router(sessions.router, prefix="/api")
 app.include_router(media.router, prefix="/api")
+app.include_router(janitor.router, prefix="/api")
 
 
 @app.get("/api/health")

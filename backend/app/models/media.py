@@ -19,6 +19,7 @@ class MediaMetadata(Base):
     year: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     genres: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     runtime_ticks: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    size_bytes: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     community_rating: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     play_count: Mapped[int] = mapped_column(Integer, default=0)
     path: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
