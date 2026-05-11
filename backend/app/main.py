@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import async_session_factory, init_db
-from app.routers import pages, sessions
+from app.routers import media, pages, sessions
 from app.services.jellyfin_client import JellyfinClient
 from app.services.watchdog import Watchdog
 
@@ -57,6 +57,7 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 app.include_router(pages.router)
 app.include_router(sessions.router, prefix="/api")
+app.include_router(media.router, prefix="/api")
 
 
 @app.get("/api/health")

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+    <h2>Currently Transcoding</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Media</th>
+                    <th>Device</th>
+                    <th>Client</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody id="active-transcodes-body">
+                <tr><td colspan="5" style="text-align:center;color:#666;padding:2rem;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="chart-grid">
+    <div class="chart-card">
+        <h3>Transcode Reason Breakdown</h3>
+        <canvas id="reasonChart" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3>Top Transcoders</h3>
+        <canvas id="topTranscodersChart" height="200"></canvas>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Transcode Leaderboard</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Transcodes</th>
+                </tr>
+            </thead>
+            <tbody id="transcoder-leaderboard-body">
+                <tr><td colspan="2" style="text-align:center;color:#666;padding:2rem;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/transcodes.js"></script>
+{% endblock %}

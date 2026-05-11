@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+    <div class="filter-bar">
+        <h2>Playback History</h2>
+        <div class="filters">
+            <input type="text" id="filter-user" placeholder="Filter by user..." class="filter-input">
+            <input type="text" id="filter-media" placeholder="Filter by media..." class="filter-input">
+            <button id="filter-btn" class="btn">Apply</button>
+        </div>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Media</th>
+                    <th>Device</th>
+                    <th>Duration</th>
+                    <th>Method</th>
+                </tr>
+            </thead>
+            <tbody id="history-body">
+                <tr><td colspan="5" style="text-align:center;color:#666;padding:2rem;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination" id="pagination">
+        <button id="prev-page" class="btn" disabled>Previous</button>
+        <span id="page-info">Page 1</span>
+        <button id="next-page" class="btn">Next</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}

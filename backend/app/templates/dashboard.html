@@ -15,6 +15,17 @@
     </div>
 </div>
 
+<div class="chart-grid">
+    <div class="chart-card">
+        <h3>Plays Over Time (30d)</h3>
+        <canvas id="playsChart" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3>Top Media</h3>
+        <canvas id="topMediaChart" height="200"></canvas>
+    </div>
+</div>
+
 <div class="section">
     <h2>Currently Playing</h2>
     <div class="table-container">
@@ -54,4 +65,8 @@
         </table>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/dashboard.js"></script>
 {% endblock %}
