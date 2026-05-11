@@ -26,3 +26,8 @@ async def media_detail_page(request: Request, item_id: int):
     return templates.TemplateResponse(
         "media_detail.html", {"request": request, "item_id": item_id}
     )
+
+
+@router.get("/newsletter", response_class=HTMLResponse)
+async def newsletter_page(request: Request):
+    return templates.TemplateResponse("newsletter.html", {"request": request})

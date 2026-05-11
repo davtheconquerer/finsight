@@ -14,6 +14,7 @@ async def init_db():
     from app.models import media  # noqa: F401
     from app.models import playback  # noqa: F401
     from app.models import webhook  # noqa: F401
+    from app.models import newsletter  # noqa: F401
 
     os.makedirs("data", exist_ok=True)
     async with engine.begin() as conn:

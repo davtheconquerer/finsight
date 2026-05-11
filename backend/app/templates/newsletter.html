@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section">
+    <div class="filter-bar">
+        <h2>Weekly Digest</h2>
+        <div class="filters">
+            <button id="generate-btn" class="btn">Generate Now</button>
+        </div>
+    </div>
+    <div id="digest-info" style="text-align:center;color:#666;padding:1rem;">Loading...</div>
+</div>
+
+<div class="section">
+    <h2>Preview</h2>
+    <div id="digest-preview" style="background:#222340;border-radius:12px;border:1px solid #2a2b4a;padding:1rem;min-height:200px;overflow:auto;">
+        <iframe id="preview-frame" style="width:100%;min-height:600px;border:none;background:#fff;border-radius:8px;"></iframe>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const previewFrame = document.getElementById('preview-frame');
+const digestInfo = document.getElementById('digest-info');
+const generateBtn = document.getElementById('generate-btn');
+
+async function loadPreview() {
+    const resp = await fetch('/api/newsletter/latest');
+    const info = await resp.json();
+    if (info.exists) {
+        digestInfo.innerHTML = `Latest digest: <strong>${info.week_start}</strong> &mdash; <strong>${info.week_end}</strong> (generated ${new Date(info.generated_at).toLocaleString()})`;
+        previewFrame.src = '/newsletter/preview';
+    } else {
+        digestInfo.innerHTML = 'No digest generated yet. Click <strong>Generate Now</strong> to create one.';
+        previewFrame.style.display = 'none';
+    }
+}
+
+generateBtn.addEventListener('click', async () => {
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Generating...';
+    try {
+        await fetch('/newsletter/generate', { method: 'POST' });
+        await loadPreview();
+        previewFrame.style.display = 'block';
+    } catch (err) {
+        alert('Failed to generate: ' + err);
+    }
+    generateBtn.disabled = false;
+    generateBtn.textContent = 'Generate Now';
+});
+
+document.addEventListener('DOMContentLoaded', loadPreview);
+</script>
+{% endblock %}

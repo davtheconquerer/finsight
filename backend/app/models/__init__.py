@@ -3,5 +3,13 @@ from app.models.user import User
 from app.models.media import MediaMetadata
 from app.models.playback import PlaybackSession
 from app.models.webhook import WebhookEvent
+from app.models.newsletter import NewsletterDigest
 
-__all__ = ["Base", "User", "MediaMetadata", "PlaybackSession", "WebhookEvent"]
+__all__ = [
+    "Base",
+    "User",
+    "MediaMetadata",
+    "PlaybackSession",
+    "WebhookEvent",
+    "NewsletterDigest",
+]

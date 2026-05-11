@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinSight Weekly Digest</title>
+</head>
+<body style="margin:0;padding:0;background:#1a1b2e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#e0e0e0;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1b2e;padding:20px;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+<!-- Header -->
+<tr><td style="background:#16172b;border-radius:12px 12px 0 0;padding:24px 32px;border-bottom:1px solid #2a2b4a;">
+<h1 style="margin:0;font-size:22px;font-weight:700;color:#fff;">Fin<span style="color:#6c63ff;">Sight</span> Digest</h1>
+<p style="margin:4px 0 0;color:#8888aa;font-size:13px;">{{ week_start }} &ndash; {{ week_end }}</p>
+</td></tr>
+
+<!-- Stats Row -->
+<tr><td style="padding:24px 32px;background:#222340;">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr>
+<td align="center" style="padding:12px;background:#2a2b4a;border-radius:8px;">
+<div style="font-size:28px;font-weight:700;color:#fff;">{{ total_plays }}</div>
+<div style="font-size:11px;color:#8888aa;text-transform:uppercase;">Total Plays</div>
+</td>
+<td width="12"></td>
+<td align="center" style="padding:12px;background:#2a2b4a;border-radius:8px;">
+<div style="font-size:28px;font-weight:700;color:#fff;">{{ total_transcodes }}</div>
+<div style="font-size:11px;color:#8888aa;text-transform:uppercase;">Transcodes</div>
+</td>
+</tr>
+</table>
+</td></tr>
+
+<!-- Plays Per Day -->
+{% if plays_per_day %}
+<tr><td style="padding:16px 32px 8px;background:#222340;">
+<h2 style="margin:0;font-size:14px;color:#ccc;text-transform:uppercase;letter-spacing:0.05em;">Plays Per Day</h2>
+</td></tr>
+<tr><td style="padding:8px 32px 24px;background:#222340;">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr>
+{% for day in plays_per_day %}
+<td align="center" style="padding:4px;">
+<div style="font-size:16px;font-weight:700;color:#6c63ff;">{{ day.plays }}</div>
+<div style="font-size:10px;color:#8888aa;">{{ day.date }}</div>
+</td>
+{% endfor %}
+</tr>
+</table>
+</td></tr>
+{% endif %}
+
+<!-- Top Media -->
+{% if top_media %}
+<tr><td style="padding:16px 32px 8px;background:#222340;">
+<h2 style="margin:0;font-size:14px;color:#ccc;text-transform:uppercase;letter-spacing:0.05em;border-top:1px solid #2a2b4a;padding-top:16px;">Most Played This Week</h2>
+</td></tr>
+<tr><td style="padding:8px 32px 24px;background:#222340;">
+<table width="100%" cellpadding="0" cellspacing="0">
+{% for item in top_media %}
+<tr>
+<td style="padding:6px 0;border-bottom:1px solid #2a2b4a;font-size:13px;color:#e0e0e0;">{{ item.title }}</td>
+<td align="right" style="padding:6px 0;border-bottom:1px solid #2a2b4a;font-size:13px;color:#6c63ff;font-weight:600;">{{ item.plays }} plays</td>
+</tr>
+{% endfor %}
+</table>
+</td></tr>
+{% endif %}
+
+<!-- Top Users -->
+{% if top_users %}
+<tr><td style="padding:16px 32px 8px;background:#222340;">
+<h2 style="margin:0;font-size:14px;color:#ccc;text-transform:uppercase;letter-spacing:0.05em;border-top:1px solid #2a2b4a;padding-top:16px;">Most Active Users</h2>
+</td></tr>
+<tr><td style="padding:8px 32px 24px;background:#222340;">
+<table width="100%" cellpadding="0" cellspacing="0">
+{% for u in top_users %}
+<tr>
+<td style="padding:6px 0;border-bottom:1px solid #2a2b4a;font-size:13px;color:#e0e0e0;">{{ u.name }}</td>
+<td align="right" style="padding:6px 0;border-bottom:1px solid #2a2b4a;font-size:13px;color:#6c63ff;font-weight:600;">{{ u.plays }} plays</td>
+</tr>
+{% endfor %}
+</table>
+</td></tr>
+{% endif %}
+
+<!-- New Media -->
+{% if new_media %}
+<tr><td style="padding:16px 32px 8px;background:#222340;">
+<h2 style="margin:0;font-size:14px;color:#ccc;text-transform:uppercase;letter-spacing:0.05em;border-top:1px solid #2a2b4a;padding-top:16px;">Newly Added</h2>
+</td></tr>
+<tr><td style="padding:8px 32px 24px;background:#222340;">
+<table width="100%" cellpadding="0" cellspacing="0">
+{% for m in new_media %}
+<tr>
+<td style="padding:6px 0;border-bottom:1px solid #2a2b4a;font-size:13px;color:#e0e0e0;">{{ m.title }}{% if m.year %} ({{ m.year }}){% endif %}</td>
+<td align="right" style="padding:6px 0;border-bottom:1px solid #2a2b4a;font-size:11px;color:#8888aa;">{{ m.type }}</td>
+</tr>
+{% endfor %}
+</table>
+</td></tr>
+{% endif %}
+
+<!-- Genres -->
+{% if genre_breakdown %}
+<tr><td style="padding:16px 32px 8px;background:#222340;">
+<h2 style="margin:0;font-size:14px;color:#ccc;text-transform:uppercase;letter-spacing:0.05em;border-top:1px solid #2a2b4a;padding-top:16px;">Genre Breakdown</h2>
+</td></tr>
+<tr><td style="padding:8px 32px 24px;background:#222340;">
+<table width="100%" cellpadding="0" cellspacing="0">
+{% for g in genre_breakdown %}
+<tr>
+<td style="padding:6px 0;border-bottom:1px solid #2a2b4a;font-size:13px;color:#e0e0e0;">{{ g.name }}</td>
+<td align="right" style="padding:6px 0;border-bottom:1px solid #2a2b4a;font-size:13px;color:#6c63ff;font-weight:600;">{{ g.count }} plays</td>
+</tr>
+{% endfor %}
+</table>
+</td></tr>
+{% endif %}
+
+<!-- Footer -->
+<tr><td style="background:#16172b;border-radius:0 0 12px 12px;padding:16px 32px;border-top:1px solid #2a2b4a;">
+<p style="margin:0;font-size:11px;color:#666;text-align:center;">Generated by FinSight &mdash; {{ week_end }}</p>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>

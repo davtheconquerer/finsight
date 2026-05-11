@@ -1,5 +1,7 @@
+import asyncio
 import logging
 from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -7,8 +9,9 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import async_session_factory, init_db
-from app.routers import media, pages, sessions
+from app.routers import media, newsletter, pages, sessions
 from app.services.jellyfin_client import JellyfinClient
+from app.services.newsletter import NewsletterGenerator, get_week_range
 from app.services.watchdog import Watchdog
 
 logging.basicConfig(
@@ -19,11 +22,36 @@ logger = logging.getLogger(__name__)
 
 jellyfin_client: JellyfinClient | None = None
 watchdog: Watchdog | None = None
+newsletter_scheduler: asyncio.Task | None = None
+
+
+async def _check_weekly_digest():
+    """Auto-generate the weekly digest if it doesn't exist yet."""
+    try:
+        now = datetime.utcnow()
+        if now.weekday() != 0:
+            return
+        week_start, week_end = get_week_range(now)
+        gen = NewsletterGenerator(async_session_factory)
+        existing = await gen.get_latest()
+        if existing and existing.week_start == week_start.date():
+            return
+        await gen.generate(week_start, week_end)
+        logger.info("Auto-generated weekly digest")
+    except Exception as e:
+        logger.warning("Weekly digest generation failed: %s", e)
+
+
+async def _newsletter_loop():
+    """Check hourly if a weekly digest needs generating."""
+    while True:
+        await _check_weekly_digest()
+        await asyncio.sleep(3600)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global jellyfin_client, watchdog
+    global jellyfin_client, watchdog, newsletter_scheduler
 
     logger.info("Starting FinSight...")
     await init_db()
@@ -43,8 +71,17 @@ async def lifespan(app: FastAPI):
     )
     await watchdog.start()
 
+    newsletter_scheduler = asyncio.create_task(_newsletter_loop())
+    logger.info("Newsletter scheduler started")
+
     yield
 
+    if newsletter_scheduler:
+        newsletter_scheduler.cancel()
+        try:
+            await newsletter_scheduler
+        except asyncio.CancelledError:
+            pass
     if watchdog:
         await watchdog.stop()
     logger.info("FinSight shutdown complete.")
@@ -56,6 +93,7 @@ Path("app/static").mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 app.include_router(pages.router)
+app.include_router(newsletter.router)
 app.include_router(sessions.router, prefix="/api")
 app.include_router(media.router, prefix="/api")
 
