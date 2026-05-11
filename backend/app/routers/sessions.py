@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import Date, cast, desc, func, select
+from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -117,14 +117,14 @@ async def get_plays_over_time(
     since = datetime.utcnow() - timedelta(days=days)
     result = await db.execute(
         select(
-            cast(PlaybackSession.ended_at, Date).label("date"),
+            func.date(PlaybackSession.ended_at).label("date"),
             func.count(PlaybackSession.id).label("plays"),
         )
         .where(
             PlaybackSession.ended_at.isnot(None),
             PlaybackSession.ended_at >= since,
         )
-        .group_by(cast(PlaybackSession.ended_at, Date))
+        .group_by(func.date(PlaybackSession.ended_at))
         .order_by("date")
     )
     return [{"date": str(row.date), "plays": row.plays} for row in result]

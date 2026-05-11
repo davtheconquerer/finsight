@@ -56,6 +56,12 @@ async def lifespan(app: FastAPI):
     logger.info("Starting FinSight...")
     await init_db()
 
+    if settings.demo_mode:
+        logger.info("DEMO MODE — skipping Jellyfin validation and watchdog")
+        yield
+        logger.info("FinSight shutdown complete.")
+        return
+
     jellyfin_client = JellyfinClient(
         settings.jellyfin_url, settings.jellyfin_api_key
     )

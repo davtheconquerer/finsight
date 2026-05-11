@@ -22,21 +22,22 @@ FinSight is a lightweight sidecar application that connects to your Jellyfin ser
 
 ## Quick Start
 
-### Docker (recommended)
+### Demo (no Jellyfin required)
 
 ```bash
-# Clone the repo
-git clone https://github.com/yourusername/finsight.git
-cd finsight
-
-# Create .env with your Jellyfin credentials
-echo JELLYFIN_API_KEY=your-api-key-here > .env
-
-# Start
-docker compose up -d
+docker compose -f docker-compose.demo.yml up -d
 ```
 
-Open `http://localhost:8500`.
+Open `http://localhost:8500` &mdash; the app comes pre-loaded with 6 users, 45 media items, 400 playback sessions, and a sample weekly digest.
+
+### Docker (with real Jellyfin)
+
+```bash
+git clone https://github.com/yourusername/finsight.git
+cd finsight
+echo JELLYFIN_API_KEY=your-api-key-here > .env
+docker compose up -d
+```
 
 ### Manual
 
@@ -44,6 +45,12 @@ Open `http://localhost:8500`.
 cd backend
 pip install -r requirements.txt
 
+# Demo mode (no Jellyfin needed)
+$env:DEMO_MODE="true"
+python seed_demo.py
+uvicorn app.main:app --host 0.0.0.0 --port 8500 --reload
+
+# Production mode (with real Jellyfin)
 $env:JELLYFIN_URL="http://localhost:8096"
 $env:JELLYFIN_API_KEY="your-api-key-here"
 uvicorn app.main:app --host 0.0.0.0 --port 8500 --reload

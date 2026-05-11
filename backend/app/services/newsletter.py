@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta
 
 from jinja2 import Environment, FileSystemLoader
-from sqlalchemy import Date, cast, desc, func, select
+from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from app.models.media import MediaMetadata
@@ -107,7 +107,7 @@ class NewsletterGenerator:
 
             plays_per_day_result = await db.execute(
                 select(
-                    cast(PlaybackSession.ended_at, Date).label("date"),
+                    func.date(PlaybackSession.ended_at).label("date"),
                     func.count(PlaybackSession.id).label("plays"),
                 )
                 .where(
@@ -115,7 +115,7 @@ class NewsletterGenerator:
                     PlaybackSession.ended_at < week_end,
                     PlaybackSession.ended_at.isnot(None),
                 )
-                .group_by(cast(PlaybackSession.ended_at, Date))
+                .group_by(func.date(PlaybackSession.ended_at))
                 .order_by("date")
             )
 
@@ -167,9 +167,8 @@ class NewsletterGenerator:
             ]
 
             genre_raw = await db.execute(
-                select(
-                    MediaMetadata.genres,
-                )
+                select(MediaMetadata.genres)
+                .select_from(PlaybackSession)
                 .join(MediaMetadata, PlaybackSession.media_id == MediaMetadata.id)
                 .where(
                     PlaybackSession.ended_at >= week_start,
