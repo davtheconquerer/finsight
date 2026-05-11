@@ -226,6 +226,84 @@ async def seed():
 
     print(f"  Created {len(media_objects)} media items")
 
+    print("Seeding cold media (for library janitor)...")
+    cold_media = [
+        MediaMetadata(
+            jellyfin_id="cold-movie-1",
+            title="Forgotten Classic",
+            type="Movie",
+            year=2015,
+            genres='["Drama"]',
+            runtime_ticks=6300000000,
+            community_rating=8.5,
+            play_count=0,
+            path="/media/Movies/Forgotten Classic.mkv",
+            added_at=datetime(2020, 1, 15),
+            last_played_at=None,
+            size_bytes=800000000,
+        ),
+        MediaMetadata(
+            jellyfin_id="cold-movie-2",
+            title="Old Documentary",
+            type="Movie",
+            year=2018,
+            genres='["Documentary"]',
+            runtime_ticks=5400000000,
+            community_rating=7.2,
+            play_count=1,
+            path="/media/Movies/Old Documentary.mkv",
+            added_at=datetime(2019, 6, 1),
+            last_played_at=datetime(2024, 1, 10),
+            size_bytes=600000000,
+        ),
+        MediaMetadata(
+            jellyfin_id="cold-movie-3",
+            title="Obscure Foreign Film",
+            type="Movie",
+            year=2012,
+            genres='["Drama", "Foreign"]',
+            runtime_ticks=8100000000,
+            community_rating=7.8,
+            play_count=0,
+            path="/media/Movies/Obscure Foreign Film.mkv",
+            added_at=datetime(2018, 3, 20),
+            last_played_at=None,
+            size_bytes=900000000,
+        ),
+        MediaMetadata(
+            jellyfin_id="cold-series-1",
+            title="Abandoned Series S1",
+            type="Episode",
+            year=2016,
+            genres='["Comedy"]',
+            runtime_ticks=1800000000,
+            play_count=0,
+            path="/media/TV/Abandoned Series/Season 1/Episode 1.mkv",
+            added_at=datetime(2017, 5, 10),
+            last_played_at=None,
+            size_bytes=400000000,
+        ),
+        MediaMetadata(
+            jellyfin_id="cold-movie-4",
+            title="Early 2000s Flick",
+            type="Movie",
+            year=2003,
+            genres='["Action"]',
+            runtime_ticks=6900000000,
+            community_rating=6.5,
+            play_count=2,
+            path="/media/Movies/Early 2000s Flick.mkv",
+            added_at=datetime(2015, 8, 1),
+            last_played_at=datetime(2023, 2, 15),
+            size_bytes=700000000,
+        ),
+    ]
+    async with async_session_factory() as db:
+        db.add_all(cold_media)
+        await db.commit()
+
+    print(f"  Created {len(cold_media)} cold media items")
+
     print("Seeding playback sessions...")
     sessions = []
     now = datetime.utcnow()
