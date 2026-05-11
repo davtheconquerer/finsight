@@ -1,2 +1,10 @@
 AGENTS.md
 backend/data/finsight.db
+backend/app/__pycache__
+backend/app/models/__pycache__
+backend/app/routers/__pycache__
+backend/app/services/__pycache__
+backend/tests/__pycache__
+backend/tests/test_integration/__pycache__
+backend/tests/test_routers/__pycache__
+backend/tests/test_services/__pycache__
