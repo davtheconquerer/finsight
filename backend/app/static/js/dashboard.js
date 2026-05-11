@@ -15,7 +15,7 @@ function renderActiveSessions(sessions) {
     const tbody = document.getElementById('active-sessions-body');
     if (!tbody) return;
     if (!sessions || sessions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;padding:2rem;">No active streams</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;padding:2rem;">No active streams</td></tr>';
         return;
     }
     tbody.innerHTML = sessions.map(s => `
@@ -24,7 +24,6 @@ function renderActiveSessions(sessions) {
             <td><a href="/media/${s.id}" class="nav-link" style="display:inline;padding:0">${escapeHtml(s.media)}</a></td>
             <td>${escapeHtml(s.device || '\u2014')}</td>
             <td><span class="badge ${s.play_method === 'Transcode' ? 'badge-transcode' : s.play_method ? 'badge-direct' : 'badge-unknown'}">${escapeHtml(s.play_method || '\u2014')}</span></td>
-            <td>${s.is_transcoding ? `<span class="badge badge-transcode" title="${escapeHtml(s.transcode_reason || '')}">Transcoding</span>` : '\u2014'}</td>
         </tr>
     `).join('');
 }
