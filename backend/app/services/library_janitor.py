@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 
-from sqlalchemy import desc, func, select, nullslast
+from sqlalchemy import desc, func, select, nullsfirst
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from app.models.media import MediaMetadata
@@ -24,7 +24,7 @@ class LibraryJanitor:
                     MediaMetadata.last_played_at.is_(None)
                     | (MediaMetadata.last_played_at < cutoff),
                 )
-                .order_by(nullslast(MediaMetadata.last_played_at.asc()))
+                .order_by(nullsfirst(MediaMetadata.last_played_at.asc()))
                 .limit(100)
             )
             items = []
