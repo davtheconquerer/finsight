@@ -171,6 +171,11 @@ tr:hover {
     border: 1px solid #2a2b4a;
 }
 
+.chart-container {
+    height: 200px;
+    position: relative;
+}
+
 .chart-card h3 {
     font-size: 0.95rem;
     color: #ccc;
