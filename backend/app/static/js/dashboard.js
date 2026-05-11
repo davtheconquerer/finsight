@@ -53,6 +53,11 @@ function renderStats(stats) {
     const el = (id) => document.getElementById(id);
     if (el('stat-users')) el('stat-users').textContent = stats.total_users;
     if (el('stat-media')) el('stat-media').textContent = stats.total_media;
+    if (el('stat-media-detail')) {
+        const movies = stats.total_movies || 0;
+        const shows = stats.total_shows || 0;
+        el('stat-media-detail').textContent = `${movies} Movies & ${shows} Shows`;
+    }
     if (el('stat-active')) el('stat-active').textContent = stats.active_sessions;
 }
 

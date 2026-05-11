@@ -96,6 +96,30 @@ async def get_session_history(
 async def get_stats_overview(db: AsyncSession = Depends(get_db)):
     user_count = (await db.execute(select(func.count(User.id)))).scalar()
     media_count = (await db.execute(select(func.count(MediaMetadata.id)))).scalar()
+    movie_count = (
+        await db.execute(
+            select(func.count(MediaMetadata.id)).where(MediaMetadata.type == "Movie")
+        )
+    ).scalar()
+    episode_count = (
+        await db.execute(
+            select(func.count(MediaMetadata.id)).where(MediaMetadata.type == "Episode")
+        )
+    ).scalar()
+
+    episodes = (
+        await db.execute(
+            select(MediaMetadata.title).where(MediaMetadata.type == "Episode")
+        )
+    ).scalars().all()
+
+    show_titles = set()
+    for title in episodes:
+        parts = title.split(" - S")
+        if parts[0]:
+            show_titles.add(parts[0])
+    show_count = len(show_titles)
+
     active_count = (
         await db.execute(
             select(func.count(PlaybackSession.id)).where(
@@ -106,6 +130,9 @@ async def get_stats_overview(db: AsyncSession = Depends(get_db)):
     return {
         "total_users": user_count,
         "total_media": media_count,
+        "total_movies": movie_count,
+        "total_shows": show_count,
+        "total_episodes": episode_count,
         "active_sessions": active_count,
     }
 

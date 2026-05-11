@@ -88,6 +88,12 @@ body {
     letter-spacing: 0.05em;
 }
 
+.stat-card .stat-sublabel {
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
 .section {
     padding: 0 2rem 2rem;
 }
