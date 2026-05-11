@@ -1,0 +1,16 @@
+services:
+  finsight:
+    build: ./backend
+    container_name: finsight
+    ports:
+      - "8500:8500"
+    volumes:
+      - finsight_data:/app/data
+    environment:
+      - JELLYFIN_URL=${JELLYFIN_URL:-http://host.docker.internal:8096}
+      - JELLYFIN_API_KEY=${JELLYFIN_API_KEY}
+      - POLL_INTERVAL=${POLL_INTERVAL:-30}
+    restart: unless-stopped
+
+volumes:
+  finsight_data:
