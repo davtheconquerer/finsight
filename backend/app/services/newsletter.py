@@ -62,7 +62,7 @@ class NewsletterGenerator:
     async def get_latest(self) -> NewsletterDigest | None:
         async with self.db_factory() as db:
             result = await db.execute(
-                select(NewsletterDigest).order_by(desc(NewsletterDigest.week_start)).limit(1)
+                select(NewsletterDigest).order_by(desc(NewsletterDigest.generated_at)).limit(1)
             )
             return result.scalar_one_or_none()
 

@@ -22,6 +22,9 @@ async def preview_newsletter():
 async def generate_newsletter():
     gen = NewsletterGenerator(async_session_factory)
     week_start, week_end = get_week_range()
+    from datetime import timedelta
+    week_start = week_start - timedelta(days=7)
+    week_end = week_end - timedelta(days=7)
     digest = await gen.generate(week_start, week_end)
     return {
         "status": "ok",
