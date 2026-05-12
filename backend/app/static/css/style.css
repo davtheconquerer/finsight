@@ -28,6 +28,17 @@ body {
     color: #6c63ff;
 }
 
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo img {
+    height: 32px;
+    width: auto;
+}
+
 .demo-badge {
     background: #ff4757;
     color: #fff;
