@@ -9,6 +9,16 @@
 
 FinSight is a lightweight sidecar application that connects to your Jellyfin server via its API to provide real-time monitoring, historical playback analytics, transcode visibility, library management tools, and weekly email digests &mdash; all in a single Docker container.
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Dashboard](backend/app/static/img/demo-dashboard-v1.png) | ![Transcodes](backend/app/static/img/demo-transcodes-v1.png) |
+| ![History](backend/app/static/img/demo-history-v1.png) | ![Digest](backend/app/static/img/demo-digest-v1.png) |
+| ![Library](backend/app/static/img/demo-library-v1.png) | ![Users](backend/app/static/img/demo-users-v1.png) |
+
+---
+
 ## Features
 
 - **Live Dashboard** &mdash; Active streams, plays-over-time chart, top media, recent activity
