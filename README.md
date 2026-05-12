@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="/static/img/logo.svg" alt="FinSight">
   <h1>FinSight</h1>
   <p><strong>Open-source monitoring and statistics dashboard for Jellyfin</strong></p>
   <p>Inspired by Tautulli &middot; Built with FastAPI + Chart.js + SQLite</p>
