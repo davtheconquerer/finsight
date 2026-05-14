@@ -43,17 +43,27 @@ Open `http://localhost:8500` &mdash; the app comes pre-loaded with 6 users, 45 m
 
 ### Docker (with real Jellyfin)
 
-Create a `.env` file at the project root (alongside `docker-compose.yml`) with your API key:
+FinSight uses **host networking** (`network_mode: host`) so the container can reach Jellyfin via `localhost` — ideal for running FinSight alongside Jellyfin on the same machine (Pi, server, etc.).
+
+For first-time use, you'll need a `.env` file at the project root. If you're on the same machine as Jellyfin, you can omit `JELLYFIN_URL` — it defaults to `http://localhost:8096`:
 
 ```bash
 git clone https://github.com/davtheconquerer/finsight.git
 cd finsight
 echo JELLYFIN_API_KEY=your-api-key-here >> .env
-echo JELLYFIN_URL=http://your-jellyfin-server:8096 >> .env
 docker compose up -d
 ```
 
-Docker Compose reads the `.env` file and passes the values as environment variables to the container.
+If your Jellyfin uses a different port or is on another machine:
+
+```bash
+echo JELLYFIN_URL=http://your-jellyfin-server:8096 >> .env
+```
+
+Open `http://<your-server>:8500`.
+
+> **About host networking:** Host mode binds port 8500 directly to the server's network stack — no port mapping needed. This is the simplest setup for Linux deployments (Pi, VPS, dedicated server).  
+> If you're using **Docker Desktop** (macOS/Windows) where host networking is limited, or want standard bridge networking, remove `network_mode: host` from `docker-compose.yml` and uncomment `ports:` — then use your server's LAN IP for `JELLYFIN_URL`.
 
 ### Manual
 
