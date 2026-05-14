@@ -1,4 +1,5 @@
 AGENTS.md
+.env
 backend/data/finsight.db
 backend/app/__pycache__
 backend/app/models/__pycache__
