@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 
-from sqlalchemy import desc, func, select, nullsfirst
+from sqlalchemy import and_, desc, func, select, nullsfirst
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from app.models.media import MediaMetadata
@@ -79,8 +79,11 @@ class LibraryJanitor:
                     ).label("transcodes"),
                 )
                 .outerjoin(
-                    PlaybackSession, PlaybackSession.user_id == User.id
-                )
+                        PlaybackSession, and_(
+                            PlaybackSession.user_id == User.id,
+                            PlaybackSession.ended_at.isnot(None),
+                        )
+                    )
                 .group_by(User.id)
                 .order_by(desc("total_plays"))
             )
@@ -94,6 +97,7 @@ class LibraryJanitor:
                     )
                     .where(
                         PlaybackSession.user_id == row.id,
+                        PlaybackSession.ended_at.isnot(None),
                         PlaybackSession.device_name.isnot(None),
                     )
                     .group_by(PlaybackSession.device_name)

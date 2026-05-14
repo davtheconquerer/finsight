@@ -1,6 +1,6 @@
 <div align="center">
   <img src="backend/app/static/img/logo.svg" alt="FinSight">
-  <h1>FinSight</h1>
+  <h1>FinSight v1.0.0</h1>
   <p><strong>Open-source monitoring and statistics dashboard for Jellyfin</strong></p>
   <p>Inspired by Tautulli &middot; Built with FastAPI + Chart.js + SQLite</p>
 </div>
@@ -43,16 +43,25 @@ Open `http://localhost:8500` &mdash; the app comes pre-loaded with 6 users, 45 m
 
 ### Docker (with real Jellyfin)
 
+Create a `.env` file at the project root (alongside `docker-compose.yml`) with your API key:
+
 ```bash
-git clone https://github.com/yourusername/finsight.git
+git clone https://github.com/davtheconquerer/finsight.git
 cd finsight
-echo JELLYFIN_API_KEY=your-api-key-here > .env
+echo JELLYFIN_API_KEY=your-api-key-here >> .env
+echo JELLYFIN_URL=http://your-jellyfin-server:8096 >> .env
 docker compose up -d
 ```
 
+Docker Compose reads the `.env` file and passes the values as environment variables to the container.
+
 ### Manual
 
-```bash
+The app reads settings from environment variables or a `.env` file in the **working directory** — when running from `backend/`, place your `.env` in `backend/`.
+
+**Option A — Environment variables (PowerShell):**
+
+```powershell
 cd backend
 pip install -r requirements.txt
 
@@ -66,6 +75,30 @@ $env:JELLYFIN_URL="http://localhost:8096"
 $env:JELLYFIN_API_KEY="your-api-key-here"
 uvicorn app.main:app --host 0.0.0.0 --port 8500 --reload
 ```
+
+**Option B — `.env` file (any platform):**
+
+Create `backend/.env`:
+
+```
+JELLYFIN_URL=http://localhost:8096
+JELLYFIN_API_KEY=your-api-key-here
+DEMO_MODE=false
+POLL_INTERVAL=30
+COLD_MEDIA_MONTHS=6
+LOG_LEVEL=INFO
+```
+
+Then run:
+
+```bash
+cd backend
+pip install -r requirements.txt
+python seed_demo.py    # skip if connecting to real Jellyfin
+uvicorn app.main:app --host 0.0.0.0 --port 8500 --reload
+```
+
+The `.env` is auto-loaded by `pydantic-settings` from the current working directory (`backend/`).
 
 ## Configuration
 
@@ -146,12 +179,12 @@ cd backend
 py -m pytest tests/ -v
 ```
 
-**30 passing tests** covering:
+**50 passing tests** covering:
 - JellyfinClient service (8 tests)
 - NewsletterGenerator service (3 tests)
 - LibraryJanitor service (5 tests)
 - Integration API endpoints (7 tests)
-- Router endpoints (partial)
+- Router endpoints (24 tests — janitor, media, newsletter, sessions + 3 new v1.0 tests)
 
 ## Tech Stack
 

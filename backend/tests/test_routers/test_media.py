@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime
+from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, patch
 
 from fastapi.testclient import TestClient
@@ -79,8 +79,6 @@ class TestMediaRouter:
             )
             session.add(play_session)
             await session.commit()
-
-        from datetime import timedelta
 
         async def override_get_db():
             async with session_factory() as session:

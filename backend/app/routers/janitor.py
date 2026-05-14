@@ -8,7 +8,7 @@ from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
-from app.database import async_session_factory, get_db
+from app.database import _ScopedSessionFactory, get_db
 from app.models.media import MediaMetadata
 from app.models.playback import PlaybackSession
 from app.models.user import User
@@ -21,8 +21,9 @@ router = APIRouter()
 @router.get("/library/cold-media")
 async def get_cold_media(
     months: int = Query(settings.cold_media_months, ge=1, le=120),
+    db: AsyncSession = Depends(get_db),
 ):
-    janitor = LibraryJanitor(async_session_factory)
+    janitor = LibraryJanitor(_ScopedSessionFactory(db))
     items = await janitor.get_cold_media(months)
     return {"items": items, "count": len(items), "threshold_months": months}
 
@@ -30,8 +31,9 @@ async def get_cold_media(
 @router.get("/library/cold-media/export")
 async def export_cold_media_csv(
     months: int = Query(settings.cold_media_months, ge=1, le=120),
+    db: AsyncSession = Depends(get_db),
 ):
-    janitor = LibraryJanitor(async_session_factory)
+    janitor = LibraryJanitor(_ScopedSessionFactory(db))
     items = await janitor.get_cold_media(months)
 
     output = io.StringIO()
@@ -64,8 +66,8 @@ async def export_cold_media_csv(
 
 
 @router.get("/users/stats")
-async def get_user_stats():
-    janitor = LibraryJanitor(async_session_factory)
+async def get_user_stats(db: AsyncSession = Depends(get_db)):
+    janitor = LibraryJanitor(_ScopedSessionFactory(db))
     users = await janitor.get_user_stats()
     return users
 
@@ -79,12 +81,13 @@ async def metrics(db: AsyncSession = Depends(get_db)):
     active_count = (
         await db.execute(
             select(func.count(PlaybackSession.id)).where(
-                PlaybackSession.ended_at.is_(None)
+                PlaybackSession.ended_at.is_(None),
+                PlaybackSession.media_id.isnot(None),
             )
         )
     ).scalar() or 0
 
-    janitor = LibraryJanitor(async_session_factory)
+    janitor = LibraryJanitor(_ScopedSessionFactory(db))
     cold_count = await janitor.get_cold_count(months=settings.cold_media_months)
 
     total_plays = (

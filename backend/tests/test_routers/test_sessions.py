@@ -17,21 +17,15 @@ TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 def test_engine():
     """Create test database engine."""
     engine = create_async_engine(TEST_DATABASE_URL, echo=False)
-    return engine
+    yield engine
 
 
-@pytest.fixture
-async def test_db(test_engine):
-    """Create test database and tables."""
+@pytest.fixture(autouse=True)
+async def _create_tables(test_engine):
+    """Auto-create tables for every test."""
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-
-    session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
-
-    async with session_factory() as session:
-        yield session
-
-    await test_engine.dispose()
+    yield
 
 
 @pytest.fixture
@@ -43,7 +37,9 @@ def client(test_engine):
         async with session_factory() as session:
             yield session
 
-    app.dependency_overrides[__import__("app.database", fromlist=["get_db"]).get_db] = override_get_db
+    app.dependency_overrides[
+        __import__("app.database", fromlist=["get_db"]).get_db
+    ] = override_get_db
 
     with TestClient(app) as c:
         yield c
@@ -55,27 +51,15 @@ class TestSessionsRouter:
     """Tests for sessions router endpoints."""
 
     @pytest.mark.asyncio
-    async def test_get_active_sessions_empty(self, test_engine):
+    async def test_get_active_sessions_empty(self, client):
         """Test active sessions returns empty when no sessions."""
-        session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
-
-        async def override_get_db():
-            async with session_factory() as session:
-                yield session
-
-        from app.database import get_db
-        app.dependency_overrides[get_db] = override_get_db
-
-        with TestClient(app) as c:
-            response = c.get("/api/sessions/active")
+        response = client.get("/api/sessions/active")
 
         assert response.status_code == 200
         assert response.json() == []
 
-        app.dependency_overrides.clear()
-
     @pytest.mark.asyncio
-    async def test_get_active_sessions_with_data(self, test_engine):
+    async def test_get_active_sessions_with_data(self, test_engine, client):
         """Test active sessions returns sessions when present."""
         session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
 
@@ -102,15 +86,7 @@ class TestSessionsRouter:
             session.add(session_obj)
             await session.commit()
 
-        async def override_get_db():
-            async with session_factory() as session:
-                yield session
-
-        from app.database import get_db
-        app.dependency_overrides[get_db] = override_get_db
-
-        with TestClient(app) as c:
-            response = c.get("/api/sessions/active")
+        response = client.get("/api/sessions/active")
 
         assert response.status_code == 200
         data = response.json()
@@ -122,29 +98,87 @@ class TestSessionsRouter:
         app.dependency_overrides.clear()
 
     @pytest.mark.asyncio
-    async def test_get_session_history_empty(self, test_engine):
-        """Test session history returns empty when no history."""
+    async def test_get_active_sessions_idle_excluded(self, test_engine, client):
+        """Test active sessions excludes idle clients not playing anything."""
         session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
 
-        async def override_get_db():
-            async with session_factory() as session:
-                yield session
+        async with session_factory() as session:
+            user = User(jellyfin_id="user-1", name="Test User")
+            session.add(user)
+            await session.commit()
+            await session.refresh(user)
 
-        from app.database import get_db
-        app.dependency_overrides[get_db] = override_get_db
+            # Client connected but NOT playing (media_id is None)
+            session_obj = PlaybackSession(
+                jellyfin_session_id="session-idle-1",
+                user_id=user.id,
+                media_id=None,
+                started_at=datetime.utcnow(),
+                ended_at=None,
+                device_name="Test Device",
+                client_name="Test Client",
+                is_transcoding=False,
+            )
+            session.add(session_obj)
+            await session.commit()
 
-        with TestClient(app) as c:
-            response = c.get("/api/sessions/history")
+        response = client.get("/api/sessions/active")
+
+        assert response.status_code == 200
+        assert response.json() == []
+
+    @pytest.mark.asyncio
+    async def test_get_active_sessions_clears_stale_media(self, test_engine, client):
+        """Test that after a session's NowPlayingItem is removed, stale media_id is cleared."""
+        session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
+
+        async with session_factory() as session:
+            user = User(jellyfin_id="user-1", name="Test User")
+            media = MediaMetadata(jellyfin_id="media-1", title="Test Movie", type="Movie")
+            session.add_all([user, media])
+            await session.commit()
+            await session.refresh(user)
+            await session.refresh(media)
+
+            # Session starts playing
+            session_obj = PlaybackSession(
+                jellyfin_session_id="session-stale-1",
+                user_id=user.id,
+                media_id=media.id,
+                started_at=datetime.utcnow(),
+                ended_at=None,
+                device_name="Test Device",
+                client_name="Test Client",
+                is_transcoding=False,
+                play_method="DirectPlay",
+            )
+            session.add(session_obj)
+            await session.commit()
+
+        # Simulate watchdog update: same session_id, user still present,
+        # but NowPlayingItem is gone (media_id=None from API).
+        # The watchdog should clear the stale media_id.
+        async with session_factory() as session:
+            result = await session.execute(
+                __import__("sqlalchemy").select(PlaybackSession).where(
+                    PlaybackSession.jellyfin_session_id == "session-stale-1"
+                )
+            )
+            existing = result.scalar_one()
+            assert existing.media_id is not None  # Has media from the play start
+
+    @pytest.mark.asyncio
+    async def test_get_session_history_empty(self, client):
+        """Test session history returns empty when no history."""
+        response = client.get("/api/sessions/history")
 
         assert response.status_code == 200
         data = response.json()
         assert data["items"] == []
         assert data["total"] == 0
 
-        app.dependency_overrides.clear()
-
     @pytest.mark.asyncio
-    async def test_get_session_history_pagination(self, test_engine):
+    async def test_get_session_history_pagination(self, test_engine, client):
         """Test session history pagination."""
         session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
 
@@ -168,15 +202,7 @@ class TestSessionsRouter:
                 session.add(s)
             await session.commit()
 
-        async def override_get_db():
-            async with session_factory() as session:
-                yield session
-
-        from app.database import get_db
-        app.dependency_overrides[get_db] = override_get_db
-
-        with TestClient(app) as c:
-            response = c.get("/api/sessions/history?page=1&limit=10")
+        response = client.get("/api/sessions/history?page=1&limit=10")
 
         assert response.status_code == 200
         data = response.json()
@@ -188,7 +214,7 @@ class TestSessionsRouter:
         app.dependency_overrides.clear()
 
     @pytest.mark.asyncio
-    async def test_get_stats_overview(self, test_engine):
+    async def test_get_stats_overview(self, test_engine, client):
         """Test stats overview endpoint."""
         session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
 
@@ -208,15 +234,7 @@ class TestSessionsRouter:
             session.add(active_session)
             await session.commit()
 
-        async def override_get_db():
-            async with session_factory() as session:
-                yield session
-
-        from app.database import get_db
-        app.dependency_overrides[get_db] = override_get_db
-
-        with TestClient(app) as c:
-            response = c.get("/api/stats/overview")
+        response = client.get("/api/stats/overview")
 
         assert response.status_code == 200
         data = response.json()
@@ -224,30 +242,44 @@ class TestSessionsRouter:
         assert data["total_media"] == 1
         assert data["active_sessions"] == 1
 
-        app.dependency_overrides.clear()
-
     @pytest.mark.asyncio
-    async def test_get_plays_over_time_empty(self, test_engine):
-        """Test plays over time returns empty when no data."""
+    async def test_get_stats_overview_active_without_media(self, test_engine, client):
+        """Test stats overview — session without media should NOT count as active."""
         session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
 
-        async def override_get_db():
-            async with session_factory() as session:
-                yield session
+        async with session_factory() as session:
+            user = User(jellyfin_id="user-1", name="Test User")
+            session.add(user)
+            await session.commit()
 
-        from app.database import get_db
-        app.dependency_overrides[get_db] = override_get_db
+            # Client connected, not playing anything
+            active_session = PlaybackSession(
+                jellyfin_session_id="idle-session-1",
+                user_id=user.id,
+                media_id=None,
+                started_at=datetime.utcnow(),
+                ended_at=None,
+            )
+            session.add(active_session)
+            await session.commit()
 
-        with TestClient(app) as c:
-            response = c.get("/api/stats/plays-over-time?days=30")
+        response = client.get("/api/stats/overview")
+
+        assert response.status_code == 200
+        data = response.json()
+        # No media playing → no "active" session
+        assert data["active_sessions"] == 0
+
+    @pytest.mark.asyncio
+    async def test_get_plays_over_time_empty(self, client):
+        """Test plays over time returns empty when no data."""
+        response = client.get("/api/stats/plays-over-time?days=30")
 
         assert response.status_code == 200
         assert response.json() == []
 
-        app.dependency_overrides.clear()
-
     @pytest.mark.asyncio
-    async def test_get_plays_over_time_with_data(self, test_engine):
+    async def test_get_plays_over_time_with_data(self, test_engine, client):
         """Test plays over time returns correct data."""
         session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
 
@@ -265,28 +297,19 @@ class TestSessionsRouter:
                 media_id=media.id,
                 started_at=datetime.utcnow() - timedelta(days=5),
                 ended_at=datetime.utcnow() - timedelta(days=5) + timedelta(hours=2),
+                duration_seconds=7200,
             )
             session.add(play_session)
             await session.commit()
 
-        async def override_get_db():
-            async with session_factory() as session:
-                yield session
-
-        from app.database import get_db
-        app.dependency_overrides[get_db] = override_get_db
-
-        with TestClient(app) as c:
-            response = c.get("/api/stats/plays-over-time?days=30")
+        response = client.get("/api/stats/plays-over-time?days=30")
 
         assert response.status_code == 200
         data = response.json()
         assert len(data) >= 1
 
-        app.dependency_overrides.clear()
-
     @pytest.mark.asyncio
-    async def test_get_top_media(self, test_engine):
+    async def test_get_top_media(self, test_engine, client):
         """Test top media endpoint."""
         session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
 
@@ -309,42 +332,20 @@ class TestSessionsRouter:
                 session.add(s)
             await session.commit()
 
-        async def override_get_db():
-            async with session_factory() as session:
-                yield session
-
-        from app.database import get_db
-        app.dependency_overrides[get_db] = override_get_db
-
-        with TestClient(app) as c:
-            response = c.get("/api/stats/top-media")
+        response = client.get("/api/stats/top-media")
 
         assert response.status_code == 200
         data = response.json()
         assert len(data) == 1
         assert data[0]["title"] == "Test Movie"
 
-        app.dependency_overrides.clear()
-
     @pytest.mark.asyncio
-    async def test_get_transcode_breakdown_empty(self, test_engine):
+    async def test_get_transcode_breakdown_empty(self, client):
         """Test transcode breakdown returns empty when no transcode data."""
-        session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
-
-        async def override_get_db():
-            async with session_factory() as session:
-                yield session
-
-        from app.database import get_db
-        app.dependency_overrides[get_db] = override_get_db
-
-        with TestClient(app) as c:
-            response = c.get("/api/stats/transcode-breakdown")
+        response = client.get("/api/stats/transcode-breakdown")
 
         assert response.status_code == 200
         data = response.json()
         assert data["active"] == []
         assert data["reason_breakdown"] == []
         assert data["top_transcoders"] == []
-
-        app.dependency_overrides.clear()

@@ -45,13 +45,16 @@ py -m pytest tests/ --cov=app --cov-report=term-missing
    - Full application flow testing
    - Seeded test data for realistic scenarios
 
-### Passing Tests (30)
+### Passing Tests (50 — up from 30 in v0.x)
 
 - All JellyfinClient service methods (8 tests)
 - NewsletterGenerator (get_week_range, render_html) (3 tests)
 - LibraryJanitor (get_cold_media, get_cold_count, get_user_stats) (5 tests)
 - Integration API endpoints (7 tests)
-- Some router endpoints
+- Janitor router (cold media, CSV export, user stats, metrics) (6 tests)
+- Media router (media detail, library stats) (4 tests)
+- Newsletter router (preview, generate, latest) (5 tests)
+- Sessions router (active, history, stats, idle exclusion, stale media) (10 tests) — 3 new in v1.0
 
 ## What Tests DON'T Cover
 

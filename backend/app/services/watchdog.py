@@ -116,7 +116,6 @@ class Watchdog:
                 user_id = s.get("UserId")
                 if not session_id or not user_id:
                     continue
-                active_ids.add(session_id)
 
                 user = await self._ensure_user(
                     db, user_id, s.get("UserName", "Unknown")
@@ -140,13 +139,31 @@ class Watchdog:
                 transcode_info = s.get("TranscodingInfo") or {}
                 transcode_reasons = transcode_info.get("TranscodeReasons", [])
 
+                if not media_id:
+                    # Client is connected but not playing anything
+                    if existing:
+                        # Close any previously active session
+                        existing.ended_at = datetime.utcnow()
+                        if existing.started_at:
+                            existing.duration_seconds = int(
+                                (datetime.utcnow() - existing.started_at).total_seconds()
+                            )
+                        # Update the associated media's last_played_at
+                        if existing.media_id:
+                            m = await db.get(MediaMetadata, existing.media_id)
+                            if m:
+                                m.last_played_at = existing.ended_at
+                    continue
+
+                active_ids.add(session_id)
+
                 if existing:
-                    existing.media_id = media_id or existing.media_id
+                    existing.media_id = media_id
                     existing.is_transcoding = bool(transcode_info)
                     existing.transcode_reason = (
                         ", ".join(transcode_reasons) if transcode_reasons else None
                     )
-                    existing.play_method = s.get("PlayMethod", existing.play_method)
+                    existing.play_method = s.get("PlayState", {}).get("PlayMethod", existing.play_method)
                     existing.device_name = s.get("DeviceName", existing.device_name)
                     existing.client_name = s.get("Client", existing.client_name)
                 else:
@@ -161,7 +178,7 @@ class Watchdog:
                         transcode_reason=", ".join(transcode_reasons)
                         if transcode_reasons
                         else None,
-                        play_method=s.get("PlayMethod"),
+                        play_method=s.get("PlayState", {}).get("PlayMethod"),
                         ip_address=s.get("RemoteEndPoint"),
                     )
                     db.add(session)

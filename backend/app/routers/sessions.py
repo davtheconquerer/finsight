@@ -17,6 +17,7 @@ async def get_active_sessions(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(PlaybackSession)
         .where(PlaybackSession.ended_at.is_(None))
+        .where(PlaybackSession.media_id.isnot(None))
         .order_by(PlaybackSession.started_at.desc())
     )
     sessions = result.scalars().all()
@@ -123,7 +124,8 @@ async def get_stats_overview(db: AsyncSession = Depends(get_db)):
     active_count = (
         await db.execute(
             select(func.count(PlaybackSession.id)).where(
-                PlaybackSession.ended_at.is_(None)
+                PlaybackSession.ended_at.is_(None),
+                PlaybackSession.media_id.isnot(None),
             )
         )
     ).scalar()
