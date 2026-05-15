@@ -200,18 +200,19 @@ async def get_transcode_breakdown(db: AsyncSession = Depends(get_db)):
         )
     )
 
-    historical_raw = await db.execute(
-        select(
-            PlaybackSession.transcode_reason,
-            func.count(PlaybackSession.id).label("count"),
-        )
+    reasons_raw = await db.execute(
+        select(PlaybackSession.transcode_reason)
         .where(
             PlaybackSession.is_transcoding.is_(True),
             PlaybackSession.transcode_reason.isnot(None),
         )
-        .group_by(PlaybackSession.transcode_reason)
-        .order_by(desc("count"))
     )
+
+    reason_counts: dict[str, int] = {}
+    for row in reasons_raw:
+        for r in row.transcode_reason.split(", "):
+            reason_counts[r] = reason_counts.get(r, 0) + 1
+    sorted_reasons = sorted(reason_counts.items(), key=lambda x: -x[1])
 
     user_raw = await db.execute(
         select(
@@ -240,8 +241,8 @@ async def get_transcode_breakdown(db: AsyncSession = Depends(get_db)):
             for row in active
         ],
         "reason_breakdown": [
-            {"reason": row.transcode_reason, "count": row.count}
-            for row in historical_raw
+            {"reason": reason, "count": count}
+            for reason, count in sorted_reasons
         ],
         "top_transcoders": [
             {"user": row.name, "count": row.count} for row in user_raw
