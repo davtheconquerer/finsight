@@ -158,7 +158,20 @@ class Watchdog:
                 active_ids.add(session_id)
 
                 if existing:
-                    existing.media_id = media_id
+                    if existing.media_id and existing.media_id != media_id:
+                        # Media switched — close old session, create new one
+                        existing.ended_at = datetime.utcnow()
+                        if existing.started_at:
+                            existing.duration_seconds = int(
+                                (datetime.utcnow() - existing.started_at).total_seconds()
+                            )
+                        if existing.media_id:
+                            m = await db.get(MediaMetadata, existing.media_id)
+                            if m:
+                                m.last_played_at = existing.ended_at
+                        existing = None
+
+                if existing:
                     existing.is_transcoding = bool(transcode_info)
                     existing.transcode_reason = (
                         ", ".join(transcode_reasons) if transcode_reasons else None
