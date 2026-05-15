@@ -1,6 +1,6 @@
 <div align="center">
   <img src="backend/app/static/img/logo.svg" alt="FinSight">
-  <h1>FinSight v1.1.0</h1>
+  <h1>FinSight v1.2.0</h1>
   <p><strong>Open-source monitoring and statistics dashboard for Jellyfin</strong></p>
   <p>Inspired by Tautulli &middot; Built with FastAPI + Chart.js + SQLite</p>
 </div>
@@ -9,7 +9,7 @@
 
 FinSight is a lightweight sidecar application that connects to your Jellyfin server via its API to provide real-time monitoring, historical playback analytics, transcode visibility, library management tools, and weekly email digests &mdash; all in a single Docker container.
 
-## Screenshots
+## Screenshots v1.0.0
 
 | | |
 |---|---|
@@ -31,6 +31,7 @@ FinSight is a lightweight sidecar application that connects to your Jellyfin ser
 - **Weekly Digest** &mdash; Auto-generated email-ready HTML with top media, users, genre breakdown
 - **Prometheus Metrics** &mdash; `/api/metrics` endpoint for Grafana integration
 - **Polling-first** &mdash; Works out of the box without Jellyfin Webhook plugin
+- **Mobile Friendly** &mdash; Uses `@media` in `styles.css` to configure mobile view looks and feel. Most importantly adding a sidebar for navigation.
 
 ## Quick Start
 
