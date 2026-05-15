@@ -13,15 +13,13 @@ function escapeHtml(str) {
 function methodBadge(method) {
     const cls = method === 'Transcode' ? 'badge-transcode'
         : method === 'DirectStream' ? 'badge-directstream'
-        : method === 'Remux' ? 'badge-remux'
         : method ? 'badge-direct'
         : 'badge-unknown';
 
     const label = escapeHtml(method || '\u2014');
     const tips = {
         'DirectPlay': 'Original file, no modifications. Zero server load.',
-        'Remux': 'Container remuxed, codecs unchanged. Minimal server load.',
-        'DirectStream': 'Original video stream, transcoded audio stream. Medium server load.',
+        'DirectStream': 'Container remuxed or audio transcoded. Low to medium server load.',
         'Transcode': 'Re-encoding video/audio. High server load.',
     };
     const title = tips[method] || '';
