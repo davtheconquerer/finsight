@@ -1,6 +1,6 @@
 <div align="center">
   <img src="backend/app/static/img/logo.svg" alt="FinSight">
-  <h1>FinSight v1.0.0</h1>
+  <h1>FinSight v1.1.0</h1>
   <p><strong>Open-source monitoring and statistics dashboard for Jellyfin</strong></p>
   <p>Inspired by Tautulli &middot; Built with FastAPI + Chart.js + SQLite</p>
 </div>
@@ -21,9 +21,10 @@ FinSight is a lightweight sidecar application that connects to your Jellyfin ser
 
 ## Features
 
-- **Live Dashboard** &mdash; Active streams, plays-over-time chart, top media, recent activity
-- **Transcode Shaming** &mdash; See who is transcoding, why, and from which device
-- **Playback History** &mdash; Filterable, paginated log with user/media search
+- **Live Dashboard** &mdash; Active streams, plays-over-time chart, top 10 media, recent activity
+- **Playback Method Badges** &mdash; Color-coded badges (🟢 DirectPlay, 🟠 DirectStream, 🔴 Transcode) with hover tooltips explaining each method
+- **Transcode Shaming** &mdash; See who is transcoding, why, and from which device. Pie chart breaks down compound reasons into individual tallies
+- **Playback History** &mdash; Filterable, paginated log with user/media search, date column, and transcode reason column
 - **Media Detail** &mdash; Per-item play count, transcode ratio, and full play history
 - **Library Janitor** &mdash; Identify cold media not played in N months, with CSV export
 - **User Stats** &mdash; Per-user play counts, transcode ratio, device breakdown
@@ -194,7 +195,7 @@ py -m pytest tests/ -v
 - NewsletterGenerator service (3 tests)
 - LibraryJanitor service (5 tests)
 - Integration API endpoints (7 tests)
-- Router endpoints (24 tests — janitor, media, newsletter, sessions + 3 new v1.0 tests)
+- Router endpoints (27 tests — janitor, media, newsletter, sessions)
 
 ## Tech Stack
 
