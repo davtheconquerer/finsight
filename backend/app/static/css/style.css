@@ -51,6 +51,14 @@ body {
     letter-spacing: 0.05em;
 }
 
+.version-badge {
+    margin-left: auto;
+    color: #555;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
 .nav-links {
     margin-left: 2rem;
     display: flex;

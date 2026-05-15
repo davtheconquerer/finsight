@@ -1,6 +1,9 @@
 from pydantic_settings import BaseSettings
 
 
+APP_VERSION = "v1.1.0"
+
+
 class Settings(BaseSettings):
     jellyfin_url: str = "http://localhost:8096"
     jellyfin_api_key: str = ""

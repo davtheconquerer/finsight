@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from app.config import settings
+from app.config import APP_VERSION, settings
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -10,7 +10,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 def render(name: str, request: Request, **extra):
     return templates.TemplateResponse(
-        request, name, {**extra, "demo_mode": settings.demo_mode}
+        request, name, {**extra, "demo_mode": settings.demo_mode, "version": APP_VERSION}
     )
 
 
