@@ -169,6 +169,16 @@ tr:hover {
     color: #fff;
 }
 
+.badge-remux {
+    background: #ffa502;
+    color: #fff;
+}
+
+.badge-directstream {
+    background: #ff6348;
+    color: #fff;
+}
+
 .badge-unknown {
     background: #555;
     color: #ccc;

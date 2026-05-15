@@ -10,6 +10,24 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+function methodBadge(method) {
+    const cls = method === 'Transcode' ? 'badge-transcode'
+        : method === 'DirectStream' ? 'badge-directstream'
+        : method === 'Remux' ? 'badge-remux'
+        : method ? 'badge-direct'
+        : 'badge-unknown';
+
+    const label = escapeHtml(method || '\u2014');
+    const tips = {
+        'DirectPlay': 'Original file, no modifications. Zero server load.',
+        'Remux': 'Container remuxed, codecs unchanged. Minimal server load.',
+        'DirectStream': 'Original video stream, transcoded audio stream. Medium server load.',
+        'Transcode': 'Re-encoding video/audio. High server load.',
+    };
+    const title = tips[method] || '';
+    return `<span class="badge ${cls}"${title ? ' title="' + title + '"' : ''}>${label}</span>`;
+}
+
 /* ── Dashboard ── */
 function renderActiveSessions(sessions) {
     const tbody = document.getElementById('active-sessions-body');
@@ -23,7 +41,7 @@ function renderActiveSessions(sessions) {
             <td>${escapeHtml(s.user)}</td>
             <td><a href="/media/${s.id}" class="nav-link" style="display:inline;padding:0">${escapeHtml(s.media)}</a></td>
             <td>${escapeHtml(s.device || '\u2014')}</td>
-            <td><span class="badge ${s.play_method === 'Transcode' ? 'badge-transcode' : s.play_method ? 'badge-direct' : 'badge-unknown'}">${escapeHtml(s.play_method || '\u2014')}</span></td>
+            <td>${methodBadge(s.play_method)}</td>
         </tr>
     `).join('');
 }
@@ -45,7 +63,7 @@ function renderHistory(sessions) {
             <td><a href="${link}" class="nav-link" style="display:inline;padding:0">${escapeHtml(s.media)}</a></td>
             <td>${escapeHtml(s.device || '\u2014')}</td>
             <td>${dur}</td>
-            <td><span class="badge ${s.play_method === 'Transcode' ? 'badge-transcode' : s.play_method ? 'badge-direct' : 'badge-unknown'}">${escapeHtml(s.play_method || '\u2014')}</span></td>
+            <td>${methodBadge(s.play_method)}</td>
             <td>${date}</td>
         </tr>`;
     }).join('');
@@ -171,7 +189,7 @@ async function loadHistoryPage() {
                 <td><a href="${link}" class="nav-link" style="display:inline;padding:0">${escapeHtml(s.media)}</a></td>
                 <td>${escapeHtml(s.device || '\u2014')}</td>
                 <td>${dur}</td>
-                <td><span class="badge ${s.play_method === 'Transcode' ? 'badge-transcode' : s.play_method ? 'badge-direct' : 'badge-unknown'}">${escapeHtml(s.play_method || '\u2014')}</span></td>
+                <td>${methodBadge(s.play_method)}</td>
                 <td>${date}</td>
             </tr>`;
         }).join('');
@@ -241,7 +259,7 @@ async function loadMediaDetail() {
             <td>${escapeHtml(s.user)}</td>
             <td>${date}</td>
             <td>${dur}</td>
-            <td><span class="badge ${s.play_method === 'Transcode' ? 'badge-transcode' : s.play_method ? 'badge-direct' : 'badge-unknown'}">${escapeHtml(s.play_method || '\u2014')}</span></td>
+            <td>${methodBadge(s.play_method)}</td>
             <td>${escapeHtml(s.device || '\u2014')}</td>
         </tr>`;
     }).join('');
