@@ -3,7 +3,7 @@ services:
     build: ./backend
     container_name: finsight-demo
     ports:
-      - "8500:8500"
+      - "8501:8500"
     volumes:
       - finsight_demo_data:/app/data
     environment:
