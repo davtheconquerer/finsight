@@ -48,13 +48,14 @@ function renderHistory(sessions) {
     const tbody = document.getElementById('history-body');
     if (!tbody) return;
     if (!sessions || sessions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;padding:2rem;">No playback history</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#666;padding:2rem;">No playback history</td></tr>';
         return;
     }
     tbody.innerHTML = sessions.map(s => {
         const dur = s.duration ? Math.round(s.duration / 60) + 'm' : '\u2014';
         const link = s.media_id ? `/media/${s.media_id}` : '#';
         const date = s.ended_at ? new Date(s.ended_at).toLocaleString() : '\u2014';
+        const reason = s.transcode_reason ? escapeHtml(s.transcode_reason) : '\u2014';
         return `
         <tr>
             <td>${escapeHtml(s.user)}</td>
@@ -62,6 +63,7 @@ function renderHistory(sessions) {
             <td>${escapeHtml(s.device || '\u2014')}</td>
             <td>${dur}</td>
             <td>${methodBadge(s.play_method)}</td>
+            <td style="font-size:0.8rem;color:#aaa;">${reason}</td>
             <td>${date}</td>
         </tr>`;
     }).join('');
@@ -175,12 +177,13 @@ async function loadHistoryPage() {
     const tbody = document.getElementById('history-body');
     if (!tbody) return;
     if (!data.items || data.items.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;padding:2rem;">No results</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#666;padding:2rem;">No results</td></tr>';
     } else {
         tbody.innerHTML = data.items.map(s => {
             const dur = s.duration ? Math.round(s.duration / 60) + 'm' : '\u2014';
             const link = s.media_id ? `/media/${s.media_id}` : '#';
             const date = s.ended_at ? new Date(s.ended_at).toLocaleString() : '\u2014';
+            const reason = s.transcode_reason ? escapeHtml(s.transcode_reason) : '\u2014';
             return `
             <tr>
                 <td>${escapeHtml(s.user)}</td>
@@ -188,6 +191,7 @@ async function loadHistoryPage() {
                 <td>${escapeHtml(s.device || '\u2014')}</td>
                 <td>${dur}</td>
                 <td>${methodBadge(s.play_method)}</td>
+                <td style="font-size:0.8rem;color:#aaa;">${reason}</td>
                 <td>${date}</td>
             </tr>`;
         }).join('');
