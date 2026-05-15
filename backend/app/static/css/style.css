@@ -59,6 +59,40 @@ body {
     letter-spacing: 0.05em;
 }
 
+/* ── Sidebar ── */
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 60%;
+    height: 100%;
+    background: #16172b;
+    border-right: 1px solid #2a2b4a;
+    padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    transition: left 0.25s ease;
+    z-index: 1000;
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.sidebar-overlay.open {
+    display: block;
+}
+
 .nav-links {
     margin-left: 2rem;
     display: flex;
@@ -77,6 +111,48 @@ body {
 .nav-link:hover {
     color: #fff;
     background: #2a2b4a;
+}
+
+.nav-github {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+
+    .logo {
+        cursor: pointer;
+    }
+
+    .sidebar-github {
+        margin-top: auto;
+        color: #555;
+        text-decoration: none;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: color 0.15s;
+    }
+
+    .sidebar-github:hover {
+        color: #fff;
+        background: #2a2b4a;
+    }
+}
+
+@media (min-width: 769px) {
+    .sidebar,
+    .sidebar-overlay {
+        display: none;
+    }
 }
 
 .stats-grid {
@@ -189,7 +265,7 @@ tr:hover {
 
 .chart-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1rem;
     padding: 0 2rem 1.5rem;
 }
